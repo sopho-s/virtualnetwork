@@ -1,0 +1,1 @@
+add_library(data buffer.h buffer.cpp devicegraph.h devicegraph.cpp)

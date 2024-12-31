@@ -1,0 +1,21 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<endpoints>
+    <NIC id="0">
+        <name>eth0</name>
+        <mac>00:11:22:33:44:55</mac>
+        <device></device>
+    </NIC>
+    <NIC id="1">
+        <name>eth1</name>
+        <mac>11:22:33:44:55:66</mac>
+        <device></device>
+    </NIC>
+</endpoints>
+<devices>
+</devices>
+<network>
+    <connection id="0">
+        <endpoint1>eth0</endpoint1>
+        <endpoint2>eth1</endpoint2>
+    </connection>
+</network>
