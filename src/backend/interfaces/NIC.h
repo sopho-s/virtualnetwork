@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <linux/if.h>
 #include <sys/ioctl.h>
+#include <cstdlib>
 #pragma once
 
 namespace backend
@@ -25,18 +26,27 @@ namespace backend
                 int sock;
                 data::Buffer databuff;
                 Endpoint *connection;
+                bool isup = false;
+                std::string iface;
+                void CreateNic(const std::string& iface);
             public:
-                NIC(std::string MAC, std::string IP="nan") {
+                NIC(std::string MAC, std::string iface, std::string IP="nan") {
                     this->MAC = MAC;
                     this->IP = IP;
+                    this->iface = iface;
+                    this->BindNIC(iface);
                 }
                 //virtual ~NIC();
                 void BindNIC(const std::string& iface);
                 char* Read(int amount);
+                int GetPackets(char* out);
                 void Receive(char *data, int amount);
                 void ListenPackets();
                 void SendPacket(char *data, int amount);
                 void Send(char* data, int amount);
+                void Up();
+                void Down();
+                void Connect(Endpoint *endpoint, std::string bridge);
         };
     }
 }

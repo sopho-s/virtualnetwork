@@ -4,8 +4,25 @@ namespace backend
 {
     namespace interfaces
     {
+        void NIC::CreateNic(const std::string& iface)
+        {
+            std::string command = "ip link add " + iface + " type dummy";
+            if (system(command.c_str()) != 0) {
+                throw std::runtime_error("Failed to create NIC");
+            }
+            command = "ip link set " + iface + " up";
+            if (system(command.c_str()) != 0) {
+                throw std::runtime_error("Failed to create NIC");
+            }
+            command = "ip link set " + iface + " address " + this->MAC;
+            if (system(command.c_str()) != 0) {
+                throw std::runtime_error("Failed to create NIC");
+            }
+        }
+
         void NIC::BindNIC(const std::string& iface)
         {
+            this->CreateNic(iface);
             this->sock = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
             if (this->sock == -1)
             {
@@ -63,6 +80,20 @@ namespace backend
             }
         }
 
+        int NIC::GetPackets(char *out)
+        {
+            if (this->sock < 0)
+            {
+                throw std::runtime_error("Socket is not bound");
+            }
+            out = new char[4096];
+            int size;
+            do {
+                size = recv(this->sock, out, 4096, 0);
+            } while (size == -1);
+            return size;
+        }
+
         void NIC::SendPacket(char *data, int amount)
         {
             this->connection->Receive(data, amount);
@@ -71,6 +102,32 @@ namespace backend
         void NIC::Send(char *data, int amount)
         {
             this->SendPacket(data, amount);
+        }
+
+        void NIC::Up()
+        {
+            std::string command = "ip link set " + this->iface + " up";
+            system(command.c_str());
+            if (this->IP != "nan")
+            {
+                command = "ip addr add " + this->IP + " dev " + this->iface;
+                system(command.c_str());
+            }
+            this->isup = true;
+        }
+
+        void NIC::Down()
+        {
+            std::string command = "ip link delete " + this->iface;
+            system(command.c_str());
+            this->isup = false;
+        }
+
+        void NIC::Connect(Endpoint *endpoint, std::string bridge)
+        {
+            this->connection = endpoint;
+            std::string command = "ip link set " + this->iface + " master " + bridge;
+            system(command.c_str());
         }
     }
 }
